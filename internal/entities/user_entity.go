@@ -1,7 +1,10 @@
 package entities
 
 import (
+	"fmt"
+
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
@@ -12,5 +15,21 @@ type User struct {
 }
 
 func NewUser(name, email, password string) (*User, error) {
-	return nil, nil
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+
+	return &User{
+		ID:       uuid.New(),
+		Name:     name,
+		Email:    email,
+		Password: string(hash),
+	}, nil
+}
+
+func (u *User) ValidatePassword(password string) error {
+	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
+	fmt.Println("Err", err)
+	return err
 }
