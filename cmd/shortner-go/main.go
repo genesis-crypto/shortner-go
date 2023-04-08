@@ -11,6 +11,7 @@ import (
 	"github.com/genesis-crypto/shortner-go/internal/infra/database"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"github.com/penglongli/gin-metrics/ginmetrics"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -29,6 +30,12 @@ func main() {
 	db.AutoMigrate(&entities.User{}, &entities.Link{})
 
 	r := gin.Default()
+
+	m := ginmetrics.GetMonitor()
+	m.SetMetricPath("/metrics")
+	m.SetSlowTime(10)
+	m.SetDuration([]float64{0.1, 0.3, 1.2, 5, 10})
+	m.Use(r)
 
 	userDB := database.NewUser(db)
 	userHandler := handler.NewUserHandler(userDB)
@@ -96,5 +103,5 @@ func main() {
 	linkRoute.PATCH("/:uuid", linkHandler.UpdateLink)
 	linkRoute.DELETE("/:uuid", linkHandler.DeleteLink)
 
-	r.Run(":3000")
+	r.Run(":8080")
 }
