@@ -15,6 +15,9 @@ type conf struct {
 	WebServerPort string `mapstructure:"WEB_SERVER_PORT"`
 	JWTSecret     string `mapstructure:"JWT_SECRET"`
 	JwtExperesIn  int    `mapstructure:"JWT_EXPIRESIN"`
+	RedisAddress  string `mapstructure:"REDIS_HOST"`
+	RedisPort     string `mapstructure:"REDIS_PORT"`
+	RedisPassword string `mapstructure:"REDIS_PASSWORD"`
 	TokenAuth     *jwtauth.JWTAuth
 }
 

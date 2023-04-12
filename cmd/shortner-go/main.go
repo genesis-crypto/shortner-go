@@ -8,6 +8,7 @@ import (
 	"github.com/genesis-crypto/shortner-go/configs"
 	entities "github.com/genesis-crypto/shortner-go/internal/entities"
 	handler "github.com/genesis-crypto/shortner-go/internal/handlers"
+	cache "github.com/genesis-crypto/shortner-go/internal/infra/cache"
 	"github.com/genesis-crypto/shortner-go/internal/infra/database"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
@@ -29,6 +30,10 @@ func main() {
 
 	db.AutoMigrate(&entities.User{}, &entities.Link{})
 
+	redisClient := cache.Redis{}
+	redisAddress := fmt.Sprintf("%s:%s", config.RedisAddress, config.RedisPort)
+	redisDB := redisClient.GetClient(redisAddress, config.RedisPassword)
+
 	r := gin.Default()
 
 	m := ginmetrics.GetMonitor()
@@ -46,7 +51,7 @@ func main() {
 	})
 
 	linkDB := database.NewLink(db)
-	linkHandler := handler.NewLinkHandler(linkDB)
+	linkHandler := handler.NewLinkHandler(linkDB, redisDB)
 
 	userRoute := r.Group("/users")
 	userRoute.POST("/generate_token", userHandler.GetJWT)
