@@ -12,7 +12,17 @@ services:
       - 8080:8080
     depends_on:
       - mysql
-    
+    container_name: api-one-go
+
+  server-two:
+    build:
+      context: .
+    ports:
+      - 8081:8080
+    depends_on:
+      - mysql
+    container_name: api-two-go
+
   mysql:
     image: mysql:5.7
     container_name: mysql-shortner-go
@@ -24,7 +34,27 @@ services:
       MYSQL_PASSWORD: root
     ports:
       - 3306:3306
-  
+  nginx:
+    build:
+        dockerfile: ./nginx.dockerfile
+        context: .
+    image: nginx
+    container_name: container-lb
+    ports:
+        - "80:80"
+    depends_on:
+        - "server"
+        - "server-two"
+    volumes:
+        - ./nginx.conf:/etc/nginx/nginx.conf
+
+  cache:
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+
   prometheus:
     image: prom/prometheus
     restart: always
