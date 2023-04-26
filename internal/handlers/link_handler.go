@@ -15,17 +15,20 @@ import (
 	"github.com/genesis-crypto/shortner-go/pkg/shortner"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
+	"github.com/streadway/amqp"
 )
 
 type LinkHandler struct {
 	LinkDB  database.LinkInterface
 	RedisDB *redis.Client
+	Queue   *amqp.Channel
 }
 
-func NewLinkHandler(db database.LinkInterface, cache *redis.Client) *LinkHandler {
+func NewLinkHandler(db database.LinkInterface, cache *redis.Client, queue *amqp.Channel) *LinkHandler {
 	return &LinkHandler{
 		LinkDB:  db,
 		RedisDB: cache,
+		Queue:   queue,
 	}
 }
 

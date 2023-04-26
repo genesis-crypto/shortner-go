@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/penglongli/gin-metrics/ginmetrics"
+	"github.com/streadway/amqp"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -24,6 +25,34 @@ func main() {
 	}
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", config.DBUser, config.DBPassword, config.DBHost, config.DBPort, config.DBName)
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		panic(err)
+	}
+
+	queue := fmt.Sprintf("%s://%s:%s@%s:%s/", config.QueueHost, config.QueueUser, config.QueuePassword, config.QueueName, config.QueuePort)
+	connectionQueue, errQ := amqp.Dial(queue)
+	if errQ != nil {
+		panic(err)
+	}
+
+	defer connectionQueue.Close()
+
+	channelRabbitMQ, err := connectionQueue.Channel()
+
+	if err != nil {
+		panic(err)
+	}
+	defer channelRabbitMQ.Close()
+
+	_, err = channelRabbitMQ.QueueDeclare(
+		"QueueService",
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+
 	if err != nil {
 		panic(err)
 	}
@@ -51,7 +80,7 @@ func main() {
 	})
 
 	linkDB := database.NewLink(db)
-	linkHandler := handler.NewLinkHandler(linkDB, redisDB)
+	linkHandler := handler.NewLinkHandler(linkDB, redisDB, channelRabbitMQ)
 
 	userRoute := r.Group("/users")
 	userRoute.POST("/generate_token", userHandler.GetJWT)

@@ -3,6 +3,8 @@ version: '3'
 volumes:
   prometheus_data: {}
   grafana_data: {}
+  rabbitmq_data:
+  rabbitmq_log:
 
 services:
   server:
@@ -21,8 +23,8 @@ services:
       - 5672:5672   # for sender and consumer connections
       - 15672:15672 # for serve RabbitMQ GUI
     volumes:
-      - ${HOME}/dev-rabbitmq/data/:/var/lib/rabbitmq
-      - ${HOME}/dev-rabbitmq/log/:/var/log/rabbitmq
+      - rabbitmq_data:/var/lib/rabbitmq/
+      - rabbitmq_log:/var/log/rabbitmq/
     restart: always
 
   server-two:

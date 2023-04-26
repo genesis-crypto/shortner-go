@@ -10,6 +10,7 @@ require (
 	github.com/penglongli/gin-metrics v0.1.10
 	github.com/redis/go-redis/v9 v9.0.3
 	github.com/spf13/viper v1.15.0
+	github.com/streadway/amqp v1.0.0
 	golang.org/x/crypto v0.5.0
 	gorm.io/driver/mysql v1.4.7
 	gorm.io/gorm v1.24.6

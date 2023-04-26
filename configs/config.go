@@ -18,6 +18,11 @@ type conf struct {
 	RedisAddress  string `mapstructure:"REDIS_HOST"`
 	RedisPort     string `mapstructure:"REDIS_PORT"`
 	RedisPassword string `mapstructure:"REDIS_PASSWORD"`
+	QueueHost     string `mapstructure:"QUEUE_HOST"`
+	QueueUser     string `mapstructure:"QUEUE_USER"`
+	QueuePassword string `mapstructure:"QUEUE_PASSWORD"`
+	QueuePort     string `mapstructure:"QUEUE_PORT"`
+	QueueName     string `mapstructure:"QUEUE_NAME"`
 	TokenAuth     *jwtauth.JWTAuth
 }
 
