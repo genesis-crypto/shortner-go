@@ -7,15 +7,6 @@ volumes:
   rabbitmq_log:
 
 services:
-  server:
-    build:
-      context: .
-    ports:
-      - 8080:8080
-    depends_on:
-      - mysql
-    container_name: api-one-go
-  
   message-broker:
     image: rabbitmq:3-management-alpine
     container_name: message-broker
@@ -26,15 +17,8 @@ services:
       - rabbitmq_data:/var/lib/rabbitmq/
       - rabbitmq_log:/var/log/rabbitmq/
     restart: always
-
-  server-two:
-    build:
-      context: .
-    ports:
-      - 8081:8080
-    depends_on:
-      - mysql
-    container_name: api-two-go
+    networks:
+      - dev-network
 
   mysql:
     image: mysql:5.7
@@ -47,6 +31,9 @@ services:
       MYSQL_PASSWORD: root
     ports:
       - 3306:3306
+    networks:
+      - dev-network
+
   nginx:
     build:
         dockerfile: ./nginx.dockerfile
@@ -56,10 +43,12 @@ services:
     ports:
         - "80:80"
     depends_on:
-        - "server"
-        - "server-two"
+        - server
+        - server-two
     volumes:
         - ./nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      - dev-network
 
   cache:
     image: redis:6.2-alpine
@@ -67,6 +56,8 @@ services:
     ports:
       - '6379:6379'
     command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    networks:
+      - dev-network
 
   prometheus:
     image: prom/prometheus
@@ -81,8 +72,46 @@ services:
       - '--web.console.templates=/usr/share/prometheus/consoles'
     ports:
       - 9090:9090
+    networks:
+      - dev-network
 
   grafana:
     image: grafana/grafana
     ports:
       - 3001:3000
+    networks:
+      - dev-network
+
+  server:
+    build:
+      context: .
+    ports:
+      - 8080:8080
+    depends_on:
+      - mysql
+      - message-broker
+      - cache
+      - prometheus
+      - grafana
+    container_name: api-one-go
+    networks:
+      - dev-network
+
+  server-two:
+    build:
+      context: .
+    ports:
+      - 8081:8080
+    depends_on:
+      - mysql
+      - message-broker
+      - cache
+      - prometheus
+      - grafana
+    container_name: api-two-go
+    networks:
+      - dev-network
+
+networks:
+  dev-network:
+    driver: bridge

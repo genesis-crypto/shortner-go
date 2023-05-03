@@ -16,6 +16,7 @@ import (
 	"github.com/streadway/amqp"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	
 )
 
 func main() {
@@ -30,16 +31,20 @@ func main() {
 	}
 
 	queue := fmt.Sprintf("%s://%s:%s@%s:%s/", config.QueueHost, config.QueueUser, config.QueuePassword, config.QueueName, config.QueuePort)
-	connectionQueue, errQ := amqp.Dial(queue)
+	connectionQueue, errQ := amqp.Dial("amqp://guest:guest@message-broker:5672")
+
 	if errQ != nil {
+		fmt.Println("errq", errQ)
 		panic(err)
 	}
 
 	defer connectionQueue.Close()
 
 	channelRabbitMQ, err := connectionQueue.Channel()
+	fmt.Println("aa =>", queue)
 
 	if err != nil {
+		fmt.Println("errr", err.Error())
 		panic(err)
 	}
 	defer channelRabbitMQ.Close()

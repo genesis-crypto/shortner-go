@@ -14,6 +14,7 @@ import (
 	"github.com/genesis-crypto/shortner-go/internal/infra/database"
 	"github.com/genesis-crypto/shortner-go/pkg/shortner"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 	"github.com/streadway/amqp"
 )
@@ -33,6 +34,7 @@ func NewLinkHandler(db database.LinkInterface, cache *redis.Client, queue *amqp.
 }
 
 func (u *LinkHandler) GetOneLink(c *gin.Context) {
+	id := uuid.New()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*4)
 	defer cancel()
 	hash := c.Param("hash")
@@ -44,6 +46,23 @@ func (u *LinkHandler) GetOneLink(c *gin.Context) {
 	}
 
 	cachedData, err := u.RedisDB.Get(ctx, hash).Result()
+
+	message := amqp.Publishing{
+		ContentType: "text/plain",
+		Body:        []byte(fmt.Sprintf("%s:%s", id.String(), hash)),
+	}
+
+	if err := u.Queue.Publish(
+		"",
+		"QueueService",
+		true,
+		false,
+		message,
+	); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"Message": err.Error()})
+		return
+	}
+
 	if err == nil {
 		c.Redirect(http.StatusFound, cachedData)
 		return
@@ -81,7 +100,6 @@ func (u *LinkHandler) GetManyLink(c *gin.Context) {
 
 	cacheKey := fmt.Sprintf("links:page%d-limit%d", pageInt, limitInt)
 
-	// Check if data is already cached
 	cachedData, err := u.RedisDB.Get(ctx, cacheKey).Result()
 	if err == nil {
 		var links []entities.Link
