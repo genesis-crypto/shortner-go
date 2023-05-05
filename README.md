@@ -109,3 +109,6 @@ Acesse o painel do Grafana em http://localhost:3000 com as seguintes credenciais
 username: admin
 password: admin
 ```
+
+## __Contato__
+Pedro Cardozo - `p-cardozo@hotmail.com` ou `609455@univem.edu.br`
