@@ -45,7 +45,7 @@ func (u *LinkHandler) GetOneLink(c *gin.Context) {
 		})
 	}
 
-	cachedData, err := u.RedisDB.Get(ctx, hash).Result()
+	cachedData, err2 := u.RedisDB.Get(ctx, hash).Result()
 
 	message := amqp.Publishing{
 		ContentType: "text/plain",
@@ -63,7 +63,7 @@ func (u *LinkHandler) GetOneLink(c *gin.Context) {
 		return
 	}
 
-	if err == nil {
+	if err2 == nil {
 		c.Redirect(http.StatusFound, cachedData)
 		return
 	}

@@ -110,5 +110,8 @@ username: admin
 password: admin
 ```
 
+### Configurar Datasource Prometheus
+```http://host.docker.internal:9090```
+
 ## __Contato__
 Pedro Cardozo - `p-cardozo@hotmail.com` ou `609455@univem.edu.br`
